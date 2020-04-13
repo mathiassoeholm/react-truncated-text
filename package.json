@@ -14,7 +14,7 @@
     "start": "tsdx watch",
     "build": "tsdx build",
     "test": "tsdx test --passWithNoTests",
-    "lint": "tsdx lint",
+    "lint": "tsdx lint src test",
     "prepare": "tsdx build"
   },
   "peerDependencies": {
@@ -35,8 +35,10 @@
   "author": "Mathias Søholm",
   "module": "dist/use-truncated-text.esm.js",
   "devDependencies": {
+    "@types/css-font-loading-module": "^0.0.4",
     "@types/react": "^16.9.34",
     "@types/react-dom": "^16.9.6",
+    "@types/resize-observer-browser": "^0.1.3",
     "husky": "^4.2.5",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
