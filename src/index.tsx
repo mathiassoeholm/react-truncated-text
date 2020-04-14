@@ -1,7 +1,7 @@
 import { useRef, useLayoutEffect } from 'react';
 
 function useTruncatedText(text: string) {
-  const ref = useRef<HTMLElement>();
+  const ref = useRef<HTMLElement | null>(null);
 
   useLayoutEffect(() => {
     if (!ref.current) {
@@ -17,11 +17,42 @@ function useTruncatedText(text: string) {
 
       ref.current.innerText = text;
       const targetHeight = Math.max(0, ref.current.offsetHeight);
-      const wordArray = text.split(' ');
-      while (ref.current.scrollHeight > targetHeight) {
-        wordArray.pop();
-        ref.current.innerHTML = wordArray.join(' ') + '...';
+      const words = text.split(' ');
+
+      let i = 0;
+      let upperLimit = words.length - 1;
+      let lowerLimit = 0;
+      while (true) {
+        const nextTry = Math.floor(lowerLimit + (upperLimit - lowerLimit) / 2);
+
+        ref.current.textContent = words.slice(0, nextTry + 1).join(' ') + '...';
+
+        if (ref.current.scrollHeight <= targetHeight) {
+          ref.current.textContent =
+            words.slice(0, nextTry + 2).join(' ') + '...';
+
+          if (ref.current.scrollHeight > targetHeight) {
+            // FOUND THE INDEX
+            ref.current.textContent =
+              words.slice(0, nextTry + 1).join(' ') + '...';
+            break;
+          } else {
+            lowerLimit = Math.max(nextTry, lowerLimit + 1);
+          }
+        } else {
+          upperLimit = Math.min(nextTry, upperLimit - 1);
+        }
+
+        if (lowerLimit === upperLimit) {
+          // The text fits
+          console.log('It fits');
+          ref.current.innerText = text;
+          break;
+        }
+
+        i++;
       }
+      console.log(i);
     }
 
     document.fonts.ready.then(truncate);
@@ -29,6 +60,7 @@ function useTruncatedText(text: string) {
     if (ResizeObserver) {
       const observer = new ResizeObserver(() => {
         truncate();
+        console.log('REsize');
       });
 
       observer.observe(ref.current);
