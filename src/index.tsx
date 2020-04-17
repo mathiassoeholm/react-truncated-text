@@ -8,33 +8,56 @@ function useTruncatedText(text: string) {
       throw new Error('Remember to set the ref returned by useTruncateText');
     }
 
-    // Inspired by '3. Using JavaScript' here:
-    // http://hackingui.com/front-end/a-pure-css-solution-for-multiline-text-truncation/
     function truncate() {
       if (!ref.current) {
         return;
       }
 
-      ref.current.innerText = text;
-      const targetHeight = Math.max(0, ref.current.offsetHeight);
-      const words = text.split(' ');
+      const {
+        paddingTop,
+        paddingBottom,
+        paddingLeft,
+        paddingRight,
+      } = getComputedStyle(ref.current);
 
-      let i = 0;
+      ref.current.innerText = text;
+      const targetHeight =
+        ref.current.clientHeight -
+        parseFloat(paddingTop) -
+        parseFloat(paddingBottom);
+
+      const targetWidth =
+        ref.current.clientWidth -
+        parseFloat(paddingLeft) -
+        parseFloat(paddingRight);
+
+      const words = text.split(' ');
+      ref.current.innerText = '';
+
+      const measureElem = document.createElement('div');
+      measureElem.style.position = 'absolute';
+      measureElem.style.visibility = 'hidden';
+      measureElem.style.maxWidth = `${targetWidth}px`;
+
+      ref.current.appendChild(measureElem);
+
+      console.log(measureElem);
+
       let upperLimit = words.length - 1;
       let lowerLimit = 0;
       while (true) {
         const nextTry = Math.floor(lowerLimit + (upperLimit - lowerLimit) / 2);
 
-        ref.current.textContent = words.slice(0, nextTry + 1).join(' ') + '...';
+        measureElem.textContent = words.slice(0, nextTry + 1).join(' ') + '...';
 
-        if (ref.current.scrollHeight <= targetHeight) {
-          ref.current.textContent =
+        if (measureElem.clientHeight <= targetHeight) {
+          measureElem.textContent =
             words.slice(0, nextTry + 2).join(' ') + '...';
 
-          if (ref.current.scrollHeight > targetHeight) {
-            // FOUND THE INDEX
-            ref.current.textContent =
+          if (measureElem.clientHeight > targetHeight) {
+            measureElem.textContent =
               words.slice(0, nextTry + 1).join(' ') + '...';
+
             break;
           } else {
             lowerLimit = Math.max(nextTry, lowerLimit + 1);
@@ -46,13 +69,16 @@ function useTruncatedText(text: string) {
         if (lowerLimit === upperLimit) {
           // The text fits
           console.log('It fits');
-          ref.current.innerText = text;
+          measureElem.textContent = text;
           break;
         }
-
-        i++;
       }
-      console.log(i);
+      const finalText = measureElem.textContent;
+
+      console.log('finalText', finalText);
+
+      ref.current.removeChild(measureElem);
+      ref.current.textContent = finalText;
     }
 
     document.fonts.ready.then(truncate);
@@ -62,9 +88,7 @@ function useTruncatedText(text: string) {
         truncate();
         console.log('REsize');
       });
-
       observer.observe(ref.current);
-
       return () => {
         observer.disconnect();
       };
