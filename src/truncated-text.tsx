@@ -1,16 +1,21 @@
-import React, { useRef, useLayoutEffect } from 'react';
+import { useRef, useLayoutEffect } from 'react';
+import * as React from 'react';
 import { truncate } from './truncate';
 
-interface Props extends React.HTMLAttributes<HTMLParagraphElement> {
-  children: string;
-}
+type Props<T extends keyof JSX.IntrinsicElements> = {
+  children: string | string[];
+  as?: string;
+} & JSX.IntrinsicElements[T];
 
-export const TruncatedText: React.FC<Props> = ({ children, ...restProps }) => {
+export function TruncatedText<T extends keyof JSX.IntrinsicElements = 'p'>(
+  props: Props<T>
+) {
+  const { children, as = 'p', ...restProps } = props;
+
   const element = useRef<HTMLElement | null>(null);
-  const text = children as string;
+  const text = Array.isArray(children) ? children.join('') : children;
 
   useLayoutEffect(() => {
-    console.log('text 1', text);
     // TODO: Make a test for scenario where multiple truncate callbacks gets added. Only latest callback should run!
     document.fonts.ready.then(
       () => element.current && truncate(element.current, text)
@@ -35,9 +40,12 @@ export const TruncatedText: React.FC<Props> = ({ children, ...restProps }) => {
     }
   }, [text]);
 
-  return (
-    <p {...restProps} ref={r => (element.current = r)}>
-      {text}
-    </p>
-  );
-};
+  const ref: React.ClassAttributes<HTMLElement>['ref'] = r =>
+    (element.current = r);
+
+  return React.createElement(as, {
+    ...restProps,
+    children: text,
+    ref,
+  });
+}
