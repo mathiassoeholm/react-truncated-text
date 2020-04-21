@@ -7,6 +7,9 @@ type Props<T extends keyof JSX.IntrinsicElements> = {
   as?: string;
 } & JSX.IntrinsicElements[T];
 
+// Idea: Custom ellipses element as prop, default to span with ...
+// Adds possibility to add a 'show more' button
+
 export function TruncatedText<T extends keyof JSX.IntrinsicElements = 'p'>(
   props: Props<T>
 ) {

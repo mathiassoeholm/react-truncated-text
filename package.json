@@ -31,9 +31,9 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "use-truncated-text",
+  "name": "react-truncated-text",
   "author": "Mathias Søholm",
-  "module": "dist/use-truncated-text.esm.js",
+  "module": "dist/react-truncated-text.esm.js",
   "devDependencies": {
     "@types/css-font-loading-module": "^0.0.4",
     "@types/react": "^16.9.34",
